@@ -13,7 +13,7 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
-export default (router, { env, logger }) => {
+export default (router, { services, exceptions, env, logger }) => {
 	// Search GitLab for repos
 	router.get("/search", async (req, res) => {
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
