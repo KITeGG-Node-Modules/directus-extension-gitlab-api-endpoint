@@ -13,11 +13,14 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
-// Create a route where I could pass in a search query
-
 export default (router, { env, logger }) => {
-	// Search GitLab
+	// Search GitLab for repos
 	router.get("/search", async (req, res) => {
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
+	});
+
+	// Post GitLab repo
+	router.post("/post-repo", async (req, res) => {
+		res.json(req.body);
 	});
 };
