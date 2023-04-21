@@ -13,9 +13,7 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
-export default (router, { services, exceptions, env, logger, database }) => {
-	const db = database.connect();
-
+export default (router, { env }) => {
 	// Search GitLab for repos
 	router.get("/search", async (req, res) => {
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
@@ -24,19 +22,5 @@ export default (router, { services, exceptions, env, logger, database }) => {
 	// Post GitLab repo
 	router.post("/post-repo", async (req, res) => {
 		res.json(req.body);
-
-		try {
-			collection = "git_imports";
-			item = req.body;
-
-			// Add the new item to the collection
-			const response = await db.collection(collection).insertOne(item);
-
-			// Send the newly created item back as the response
-			res.status(200).json(response.ops[0]);
-		} catch (error) {
-			console.error(error);
-			res.status(500).send(error.message);
-		}
 	});
 };
