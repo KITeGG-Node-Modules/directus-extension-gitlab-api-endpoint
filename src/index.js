@@ -13,14 +13,21 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
-export default (router, { env }) => {
+export default (router, { services, env }) => {
 	// Search GitLab for repos
 	router.get("/search", async (req, res) => {
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
 	});
 
 	// Post GitLab repo
-	router.post("/post-repo", async (req, res) => {
-		res.json(req.body);
+	router.post("/post-repo", async (req) => {
+		const { ItemsService } = services;
+
+		const gitImportService = new ItemsService("git_imports", {
+			schema: req.schema,
+			accountability: req.accountability,
+		});
+
+		gitImportService.createOne(req.body);
 	});
 };
