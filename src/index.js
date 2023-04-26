@@ -14,15 +14,53 @@ async function searchGitLab(search, token) {
 }
 
 async function getRepo(id, token) {
-	// Construct the files endpoint URL
-	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository/tree`;
+	// Construct the repo endpoint URL
+	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository`;
 	const headers = { "Private-Token": token };
 
-	// Fetch files
-	const response = await fetch(REPO_ENDPOINT_URL, { headers });
-	const files = await response.json();
+	// Construct the branches endpoint URL
+	const BRANCH_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/branches`;
 
-	return files;
+	// Fetch branches
+	const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
+	const branches = await branchesResponse.json();
+
+	// Filter default branch
+	const defaultBranch = branches.filter((branch) => branch.default);
+
+	// Construct the first level folder endpoint URL
+	const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
+
+	// Fetch first level folder
+	const response = await fetch(FIRST_LEVEL_FOLDER_ENDPOINT_URL, { headers });
+	const firstLevel = await response.json();
+
+	// Filter out folders
+	const firstLevelFolder = firstLevel.filter((item) => item.type === "tree");
+
+	// Filter out files
+	const firstLevelFiles = firstLevel.filter((item) => item.type !== "tree");
+
+	// Fetch files for every entry in firstLevelFolder and add them to the firstLevelFolder object
+	const firstLevelFolderWithFiles = await Promise.all(
+		firstLevelFolder.map(async (item) => {
+			const response = await fetch(
+				`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
+				{
+					headers,
+				}
+			);
+			const data = await response.json();
+			return { ...item, files: data };
+		})
+	);
+
+	// Return an object with the default branch, the first level folders and files
+	return {
+		defaultBranch: defaultBranch[0].name,
+		folders: firstLevelFolderWithFiles,
+		files: firstLevelFiles,
+	};
 }
 
 // ROUTES ---------------------------------------------------------------------
@@ -50,7 +88,7 @@ export default (router, { services, env }) => {
 	});
 
 	// Get GitLab repo
-	router.get("/get", async (req, res) => {
+	router.get("/get-repo", async (req, res) => {
 		res.json(await getRepo(req.query.id, env.GITLAB_ACCESS_TOKEN));
 	});
 };
