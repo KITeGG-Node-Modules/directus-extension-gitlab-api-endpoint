@@ -13,17 +13,28 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
+async function getRepo(id, token) {
+	// Construct the files endpoint URL
+	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository/tree`;
+	const headers = { "Private-Token": token };
+
+	// Fetch files
+	const response = await fetch(REPO_ENDPOINT_URL, { headers });
+	const files = await response.json();
+
+	return files;
+}
+
 // ROUTES ---------------------------------------------------------------------
-export default (router, { services, exceptions, env }) => {
+export default (router, { services, env }) => {
 	// Search GitLab for repos
 	router.get("/search", async (req, res) => {
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
 	});
 
 	// Post GitLab repo
-	router.post("/post-repo", async (req, res, next) => {
+	router.post("/create", async (req, res, next) => {
 		const { ItemsService } = services;
-		const { ServiceUnavailableException } = exceptions;
 
 		const gitImportService = new ItemsService("git_imports", {
 			schema: req.schema,
@@ -36,5 +47,10 @@ export default (router, { services, exceptions, env }) => {
 			.catch((error) => {
 				return next(error);
 			});
+	});
+
+	// Get GitLab repo
+	router.get("/get", async (req, res) => {
+		res.json(await getRepo(req.query.id, env.GITLAB_ACCESS_TOKEN));
 	});
 };
