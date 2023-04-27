@@ -1,6 +1,6 @@
 {
 	"name": "kitegg-directus-gitlab-api-endpoint",
-	"description": "An enpoint to talk to a GitLab instance trough Directus",
+	"description": "An endpoint to talk to a GitLab instance through Directus",
 	"icon": "extension",
 	"version": "1.0.0",
 	"keywords": [
