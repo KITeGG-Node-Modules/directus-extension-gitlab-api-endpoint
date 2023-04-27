@@ -1,7 +1,7 @@
 import { lookup } from "mime-types";
 
 const BASE_URL = "https://gitlab.rlp.net";
-const GROUP = "21057"; // equals to KITeGG on RLP GitLab cool
+const GROUP = "21057"; // equals to KITeGG on RLP GitLab
 
 // Function to search GitLab for repos
 async function searchGitLab(search, token) {
