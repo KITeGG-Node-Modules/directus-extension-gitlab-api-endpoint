@@ -32,7 +32,7 @@ async function getRepo(id, token) {
 	// Filter default branch
 	const defaultBranch = branches.filter((branch) => branch.default);
 
-	// Construct the first level folder endpoint URL
+	// Construct the folder endpoint URL
 	const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
 
 	// Fetch first level folder
@@ -40,14 +40,14 @@ async function getRepo(id, token) {
 	const firstLevel = await response.json();
 
 	// Filter out folders
-	const firstLevelFolder = firstLevel.filter((item) => item.type === "tree");
+	const folders = firstLevel.filter((item) => item.type === "tree");
 
 	// Filter out files
-	const firstLevelFiles = firstLevel.filter((item) => item.type !== "tree");
+	const files = firstLevel.filter((item) => item.type !== "tree");
 
-	// Fetch files metadata for every entry in firstLevelFolder and add them to the firstLevelFolder object
-	const firstLevelFolderWithFiles = await Promise.all(
-		firstLevelFolder.map(async (item) => {
+	// Fetch files metadata for every object in folders and add them to the corresponding object
+	const foldersWithFilesMetadata = await Promise.all(
+		folders.map(async (item) => {
 			const response = await fetch(
 				`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
 				{
@@ -62,9 +62,9 @@ async function getRepo(id, token) {
 	// Construct the file endpoint URL
 	const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/`;
 
-	//Fetch files data for evers files array in every object of firstLevelFolderWithFiles and add them to the corresponding object
-	const firstLevelFolderWithFilesData = await Promise.all(
-		firstLevelFolderWithFiles.map(async (folder) => {
+	//Fetch files data for evers files array in every object of foldersWithFilesMetadata and add them to the corresponding object
+	const foldersWithFilesData = await Promise.all(
+		foldersWithFilesMetadata.map(async (folder) => {
 			const files = await Promise.all(
 				folder.files.map(async (file) => {
 					// Replace / with %2F in file path
@@ -108,7 +108,7 @@ async function getRepo(id, token) {
 	);
 
 	// Split into files and repositories (notebooks)
-	firstLevelFolderWithFilesData.map((folder) => {
+	foldersWithFilesData.map((folder) => {
 		const files = folder.files.filter((item) => !item.name.includes(".ipynb"));
 		const repositories = folder.files.filter((item) =>
 			item.name.includes(".ipynb")
@@ -119,14 +119,14 @@ async function getRepo(id, token) {
 	});
 
 	// Compute mimeType of files from file name
-	firstLevelFiles.map((file) => {
+	files.map((file) => {
 		const fileName = file.name;
 		const mimeType = lookup(fileName);
 
 		file.mimeType = mimeType;
 	});
 
-	firstLevelFolderWithFilesData.map((folder) => {
+	foldersWithFilesData.map((folder) => {
 		folder.files.map((file) => {
 			const fileName = file.name;
 			const mimeType = lookup(fileName);
@@ -138,8 +138,8 @@ async function getRepo(id, token) {
 	// Return an object with the default branch, the first level folders and files
 	return {
 		defaultBranch: defaultBranch[0].name,
-		folders: firstLevelFolderWithFilesData,
-		files: firstLevelFiles,
+		folders: foldersWithFilesData,
+		files: files,
 	};
 }
 
