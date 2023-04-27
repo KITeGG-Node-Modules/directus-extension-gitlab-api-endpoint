@@ -55,8 +55,6 @@ async function getRepo(id, token) {
 		})
 	);
 
-	console.log(firstLevelFolderWithFiles);
-
 	// Construct the file endpoint URL
 	const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/`;
 
@@ -104,6 +102,19 @@ async function getRepo(id, token) {
 			};
 		})
 	);
+
+	// Split into files and repositories (notebooks)
+	firstLevelFolderWithFilesData.map(async (folder) => {
+		const files = folder.files.filter((item) => !item.name.includes(".ipynb"));
+		const repositories = folder.files.filter((item) =>
+			item.name.includes(".ipynb")
+		);
+
+		folder.files = files;
+		folder.repositories = repositories;
+	});
+
+	// Compute MimeType of Files from file name
 
 	// Return an object with the default branch, the first level folders and files
 	return {
