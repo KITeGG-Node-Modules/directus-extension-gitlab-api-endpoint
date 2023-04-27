@@ -1,7 +1,7 @@
 import { lookup } from "mime-types";
 
 const BASE_URL = "https://gitlab.rlp.net";
-const GROUP = "21057"; // equals to KITeGG on RLP GitLab
+const GROUP = "21057"; // equals to KITeGG on RLP GitLab cool
 
 // Function to search GitLab for repos
 async function searchGitLab(search, token) {
@@ -137,7 +137,7 @@ async function getRepo(id, token) {
 
 	// Return an object with the default branch, the first level folders and files
 	return {
-		defaultBranch: defaultBranch[0].name,
+		default_branch: defaultBranch[0].name,
 		folders: foldersWithFilesData,
 		files: files,
 	};
@@ -151,7 +151,7 @@ export default (router, { services, env }) => {
 	});
 
 	// Post GitLab repo
-	router.post("/add", async (req, res, next) => {
+	router.post("/create", async (req, res, next) => {
 		const { ItemsService } = services;
 
 		const gitImportService = new ItemsService("git_imports", {
