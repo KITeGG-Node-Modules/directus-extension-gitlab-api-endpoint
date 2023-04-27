@@ -1,6 +1,9 @@
+import { lookup } from "mime-types";
+
 const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
 
+// Function to search GitLab for repos
 async function searchGitLab(search, token) {
 	// Construct the search endpoint URL
 	const SEARCH_ENDPOINT_URL = `${BASE_URL}/api/v4/groups/${GROUP}/search?scope=projects&search=${search}`;
@@ -13,6 +16,7 @@ async function searchGitLab(search, token) {
 	return data;
 }
 
+// Function to the repository with all its files and folders
 async function getRepo(id, token) {
 	// Construct the repo endpoint URL
 	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository`;
@@ -104,7 +108,7 @@ async function getRepo(id, token) {
 	);
 
 	// Split into files and repositories (notebooks)
-	firstLevelFolderWithFilesData.map(async (folder) => {
+	firstLevelFolderWithFilesData.map((folder) => {
 		const files = folder.files.filter((item) => !item.name.includes(".ipynb"));
 		const repositories = folder.files.filter((item) =>
 			item.name.includes(".ipynb")
@@ -114,7 +118,22 @@ async function getRepo(id, token) {
 		folder.repositories = repositories;
 	});
 
-	// Compute MimeType of Files from file name
+	// Compute mimeType of files from file name
+	firstLevelFiles.map((file) => {
+		const fileName = file.name;
+		const mimeType = lookup(fileName);
+
+		file.mimeType = mimeType;
+	});
+
+	firstLevelFolderWithFilesData.map((folder) => {
+		folder.files.map((file) => {
+			const fileName = file.name;
+			const mimeType = lookup(fileName);
+
+			file.mimeType = mimeType;
+		});
+	});
 
 	// Return an object with the default branch, the first level folders and files
 	return {
