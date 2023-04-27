@@ -41,7 +41,7 @@ async function getRepo(id, token) {
 	// Filter out files
 	const firstLevelFiles = firstLevel.filter((item) => item.type !== "tree");
 
-	// Fetch files for every entry in firstLevelFolder and add them to the firstLevelFolder object
+	// Fetch files metadata for every entry in firstLevelFolder and add them to the firstLevelFolder object
 	const firstLevelFolderWithFiles = await Promise.all(
 		firstLevelFolder.map(async (item) => {
 			const response = await fetch(
@@ -55,10 +55,60 @@ async function getRepo(id, token) {
 		})
 	);
 
+	console.log(firstLevelFolderWithFiles);
+
+	// Construct the file endpoint URL
+	const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/`;
+
+	//Fetch files data for evers files array in every object of firstLevelFolderWithFiles and add them to the corresponding object
+	const firstLevelFolderWithFilesData = await Promise.all(
+		firstLevelFolderWithFiles.map(async (folder) => {
+			const files = await Promise.all(
+				folder.files.map(async (file) => {
+					// Replace / with %2F in file path
+					const filePath = file.path.replace(/\//g, "%2F");
+
+					// Get file data
+					const fileResponse = await fetch(
+						FILE_ENDPOINT_URL + filePath + `/?ref=${defaultBranch[0].name}`,
+						{
+							headers,
+						}
+					);
+
+					const fileData = await fileResponse.json();
+
+					// Get file blame data
+					const blameResponse = await fetch(
+						FILE_ENDPOINT_URL +
+							filePath +
+							`/blame?ref=${defaultBranch[0].name}`,
+						{
+							headers,
+						}
+					);
+
+					const blameData = await blameResponse.json();
+
+					return {
+						...file,
+						...blameData,
+						...fileData,
+					};
+				})
+			);
+
+			return {
+				...folder,
+				files,
+			};
+		})
+	);
+
 	// Return an object with the default branch, the first level folders and files
 	return {
 		defaultBranch: defaultBranch[0].name,
-		folders: firstLevelFolderWithFiles,
+		folders: firstLevelFolderWithFilesData,
 		files: firstLevelFiles,
 	};
 }
@@ -71,7 +121,7 @@ export default (router, { services, env }) => {
 	});
 
 	// Post GitLab repo
-	router.post("/create", async (req, res, next) => {
+	router.post("/add", async (req, res, next) => {
 		const { ItemsService } = services;
 
 		const gitImportService = new ItemsService("git_imports", {
@@ -88,7 +138,7 @@ export default (router, { services, env }) => {
 	});
 
 	// Get GitLab repo
-	router.get("/get-repo", async (req, res) => {
+	router.get("/get", async (req, res) => {
 		res.json(await getRepo(req.query.id, env.GITLAB_ACCESS_TOKEN));
 	});
 };
