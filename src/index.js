@@ -144,9 +144,16 @@ async function getRepo(id, token) {
 }
 
 // ROUTES ---------------------------------------------------------------------
-export default (router, { services, env }) => {
+export default (router, { services, exceptions, env }) => {
+	const { ForbiddenException } = exceptions;
+
 	// Search GitLab for repos
-	router.get("/search", async (req, res) => {
+	router.get("/search", async (req, res, next) => {
+		// Check if user is logged in
+		if (!req.accountability.user) {
+			return next(new ForbiddenException());
+		}
+
 		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
 	});
 
@@ -168,7 +175,12 @@ export default (router, { services, env }) => {
 	});
 
 	// Get GitLab repo
-	router.get("/get", async (req, res) => {
+	router.get("/get", async (req, res, next) => {
+		// Check if user is logged in
+		if (!req.accountability.user) {
+			return next(new ForbiddenException());
+		}
+
 		res.json(await getRepo(req.query.id, env.GITLAB_ACCESS_TOKEN));
 	});
 };
