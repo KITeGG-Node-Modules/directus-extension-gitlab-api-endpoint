@@ -3,133 +3,6 @@ import { lookup } from "mime-types";
 const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
 
-// Function to the repository with all its files and folders
-async function getRepo(id, token) {
-	// Construct the repo endpoint URL
-	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository`;
-	const headers = { "Private-Token": token };
-
-	// Construct the branches endpoint URL
-	const BRANCH_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/branches`;
-
-	// Fetch branches
-	const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
-	const branches = await branchesResponse.json();
-
-	// Filter default branch
-	const defaultBranch = branches.filter((branch) => branch.default);
-
-	// Construct the folder endpoint URL
-	const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
-
-	// Fetch first level folder
-	const response = await fetch(FIRST_LEVEL_FOLDER_ENDPOINT_URL, { headers });
-	const firstLevel = await response.json();
-
-	// Filter out folders
-	const folders = firstLevel.filter((item) => item.type === "tree");
-
-	// Filter out files
-	const files = firstLevel.filter((item) => item.type !== "tree");
-
-	// Fetch files metadata for every object in folders and add them to the corresponding object
-	const foldersWithFilesMetadata = await Promise.all(
-		folders.map(async (item) => {
-			const response = await fetch(
-				`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
-				{
-					headers,
-				}
-			);
-			const data = await response.json();
-			return { ...item, files: data };
-		})
-	);
-
-	// Construct the file endpoint URL
-	const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/`;
-
-	//Fetch files data for evers files array in every object of foldersWithFilesMetadata and add them to the corresponding object
-	const foldersWithFilesData = await Promise.all(
-		foldersWithFilesMetadata.map(async (folder) => {
-			const files = await Promise.all(
-				folder.files.map(async (file) => {
-					// Replace / with %2F in file path
-					const filePath = file.path.replace(/\//g, "%2F");
-
-					// Get file data
-					const fileResponse = await fetch(
-						FILE_ENDPOINT_URL + filePath + `/?ref=${defaultBranch[0].name}`,
-						{
-							headers,
-						}
-					);
-
-					const fileData = await fileResponse.json();
-
-					// Get file blame data
-					const blameResponse = await fetch(
-						FILE_ENDPOINT_URL +
-							filePath +
-							`/blame?ref=${defaultBranch[0].name}`,
-						{
-							headers,
-						}
-					);
-
-					const blameData = await blameResponse.json();
-
-					return {
-						...file,
-						...blameData,
-						...fileData,
-					};
-				})
-			);
-
-			return {
-				...folder,
-				files,
-			};
-		})
-	);
-
-	// Split into files and repositories (notebooks)
-	foldersWithFilesData.map((folder) => {
-		const files = folder.files.filter((item) => !item.name.includes(".ipynb"));
-		const repositories = folder.files.filter((item) =>
-			item.name.includes(".ipynb")
-		);
-
-		folder.files = files;
-		folder.repositories = repositories;
-	});
-
-	// Compute mimeType of files from file name
-	files.map((file) => {
-		const fileName = file.name;
-		const mimeType = lookup(fileName);
-
-		file.mimeType = mimeType;
-	});
-
-	foldersWithFilesData.map((folder) => {
-		folder.files.map((file) => {
-			const fileName = file.name;
-			const mimeType = lookup(fileName);
-
-			file.mimeType = mimeType;
-		});
-	});
-
-	// Return an object with the default branch, the first level folders and files
-	return {
-		default_branch: defaultBranch[0].name,
-		folders: foldersWithFilesData,
-		files: files,
-	};
-}
-
 // ROUTES ---------------------------------------------------------------------
 export default (router, { services, exceptions, env, logger }) => {
 	const { ForbiddenException } = exceptions;
@@ -155,7 +28,7 @@ export default (router, { services, exceptions, env, logger }) => {
 
 			const data = await response.json();
 
-			return data;
+			res.json(data);
 		} catch (error) {
 			logger.error(error);
 			return next(error);
@@ -186,7 +59,151 @@ export default (router, { services, exceptions, env, logger }) => {
 			return next(new ForbiddenException());
 		}
 
-		res.json(await getRepo(req.query.id, env.GITLAB_ACCESS_TOKEN));
+		try {
+			// Construct the repo endpoint URL
+			const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository`;
+			const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
+
+			// Construct the branches endpoint URL
+			const BRANCH_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/branches`;
+
+			// Fetch branches
+			const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
+
+			if (!branchesResponse.ok) {
+				throw new Error("GitLab API error: Failed to fetch branches");
+			}
+
+			const branches = await branchesResponse.json();
+
+			// Filter default branch
+			const defaultBranch = branches.filter((branch) => branch.default);
+
+			// Construct the folder endpoint URL
+			const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
+
+			// Fetch first level folder
+			const response = await fetch(FIRST_LEVEL_FOLDER_ENDPOINT_URL, {
+				headers,
+			});
+
+			if (!response.ok) {
+				throw new Error("GitLab API error: Failed to fetch first level folder");
+			}
+
+			const firstLevel = await response.json();
+
+			// Filter out folders
+			const folders = firstLevel.filter((item) => item.type === "tree");
+
+			// Filter out files
+			const files = firstLevel.filter((item) => item.type !== "tree");
+
+			// Fetch files metadata for every object in folders and add them to the corresponding object
+			const foldersWithFilesMetadata = await Promise.all(
+				folders.map(async (item) => {
+					const response = await fetch(
+						`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
+						{
+							headers,
+						}
+					);
+
+					if (!response.ok) {
+						throw new Error("GitLab API error: Failed to fetch files metadata");
+					}
+
+					const data = await response.json();
+					return { ...item, files: data };
+				})
+			);
+
+			// Construct the file endpoint URL
+			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/`;
+
+			// Fetch file data for a given file path
+			async function fetchFileData(filePath, headers) {
+				const fileResponse = await fetch(
+					FILE_ENDPOINT_URL + filePath + `/?ref=${defaultBranch[0].name}`,
+					{
+						headers,
+					}
+				);
+
+				if (!fileResponse.ok) {
+					throw new Error("GitLab API error: Failed to fetch file data");
+				}
+
+				return fileResponse.json();
+			}
+
+			// Fetch files data for each file in a folder
+			async function fetchFilesData(folder, headers) {
+				const files = await Promise.all(
+					folder.files.map(async (file) => {
+						const filePath = file.path.replace(/\//g, "%2F");
+						const fileData = await fetchFileData(filePath, headers);
+
+						return {
+							...file,
+							...fileData,
+						};
+					})
+				);
+
+				return {
+					...folder,
+					files,
+				};
+			}
+
+			// Fetch files data for each folder in foldersWithFilesMetadata
+			const foldersWithFilesData = await Promise.all(
+				foldersWithFilesMetadata.map(async (folder) => {
+					return fetchFilesData(folder, headers);
+				})
+			);
+
+			// Split into files and repositories (notebooks)
+			foldersWithFilesData.map((folder) => {
+				const files = folder.files.filter(
+					(item) => !item.name.includes(".ipynb")
+				);
+				const repositories = folder.files.filter((item) =>
+					item.name.includes(".ipynb")
+				);
+
+				folder.files = files;
+				folder.repositories = repositories;
+			});
+
+			// Compute mimeType of files from file name
+			files.map((file) => {
+				const fileName = file.name;
+				const mimeType = lookup(fileName);
+
+				file.mimeType = mimeType;
+			});
+
+			foldersWithFilesData.map((folder) => {
+				folder.files.map((file) => {
+					const fileName = file.name;
+					const mimeType = lookup(fileName);
+
+					file.mimeType = mimeType;
+				});
+			});
+
+			// Return an object with the default branch, the first level folders and files
+			res.json({
+				default_branch: defaultBranch[0].name,
+				folders: foldersWithFilesData,
+				files: files,
+			});
+		} catch (error) {
+			logger.error(error);
+			return next(error);
+		}
 	});
 
 	// Get content of Markdown file
