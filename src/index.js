@@ -3,19 +3,6 @@ import { lookup } from "mime-types";
 const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
 
-// Function to search GitLab for repos
-async function searchGitLab(search, token) {
-	// Construct the search endpoint URL
-	const SEARCH_ENDPOINT_URL = `${BASE_URL}/api/v4/groups/${GROUP}/search?scope=projects&search=${search}`;
-	const headers = { "Private-Token": token };
-
-	// Fetch repos
-	const response = await fetch(SEARCH_ENDPOINT_URL, { headers });
-	const data = await response.json();
-
-	return data;
-}
-
 // Function to the repository with all its files and folders
 async function getRepo(id, token) {
 	// Construct the repo endpoint URL
@@ -154,7 +141,25 @@ export default (router, { services, exceptions, env, logger }) => {
 			return next(new ForbiddenException());
 		}
 
-		res.json(await searchGitLab(req.query.query, env.GITLAB_ACCESS_TOKEN));
+		try {
+			// Construct the search endpoint URL
+			const SEARCH_ENDPOINT_URL = `${BASE_URL}/api/v4/groups/${GROUP}/search?scope=projects&search=${req.query.search}`;
+			const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
+
+			// Fetch repos
+			const response = await fetch(SEARCH_ENDPOINT_URL, { headers });
+
+			if (!response.ok) {
+				throw new Error("GitLab API error: Failed to search for repos");
+			}
+
+			const data = await response.json();
+
+			return data;
+		} catch (error) {
+			logger.error(error);
+			return next(error);
+		}
 	});
 
 	// Post GitLab repo
