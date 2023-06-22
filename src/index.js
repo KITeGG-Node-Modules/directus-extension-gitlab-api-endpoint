@@ -143,30 +143,8 @@ async function getRepo(id, token) {
 	};
 }
 
-// Function to get the content of a markdown file
-async function getMarkdown(id, path, token) {
-	// Construct endpoint for single file information
-	const FILE_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${id}/repository/files/`;
-	const headers = { "Private-Token": token };
-
-	const filePath = path.replace(/\//g, "%2F");
-
-	console.log(filePath);
-
-	// Fetch markdown content
-	const markdownContent = await fetch(FILE_ENDPOINT_URL + filePath + `/raw`, {
-		headers,
-	});
-
-	console.log(markdownContent);
-
-	const markdownText = await markdownContent.text();
-
-	return markdownText;
-}
-
 // ROUTES ---------------------------------------------------------------------
-export default (router, { services, exceptions, env }) => {
+export default (router, { services, exceptions, env, logger }) => {
 	const { ForbiddenException } = exceptions;
 
 	// Search GitLab for repos
@@ -213,8 +191,31 @@ export default (router, { services, exceptions, env }) => {
 			return next(new ForbiddenException());
 		}
 
-		res.json(
-			await getMarkdown(req.query.id, req.query.path, env.GITLAB_ACCESS_TOKEN)
-		);
+		try {
+			// Construct endpoint for single file information
+			const FILE_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository/files/`;
+			const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
+
+			const filePath = req.query.path.replace(/\//g, "%2F");
+
+			let markdownContent;
+
+			// Fetch markdown content
+			markdownContent = await fetch(FILE_ENDPOINT_URL + filePath + `/raw`, {
+				headers,
+			});
+
+			// Check if markdown content was fetched successfully
+			if (!markdownContent.ok) {
+				throw new Error("Failed to fetch markdown content");
+			}
+
+			const markdownText = await markdownContent.text();
+
+			res.json(markdownText);
+		} catch (error) {
+			logger.error(error);
+			return next(error);
+		}
 	});
 };
