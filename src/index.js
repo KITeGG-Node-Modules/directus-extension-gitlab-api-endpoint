@@ -70,14 +70,16 @@ export default (router, { services, exceptions, env, logger }) => {
 			// Fetch branches
 			const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
 
-			if (!branchesResponse.ok) {
-				throw new Error("GitLab API error: Failed to fetch branches");
-			}
+			// if (!branchesResponse.ok) {
+			// 	throw new Error("GitLab API error: Failed to fetch branches");
+			// }
 
 			const branches = await branchesResponse.json();
 
 			// Filter default branch
 			const defaultBranch = branches.filter((branch) => branch.default);
+
+			logger.info(defaultBranch);
 
 			// Construct the folder endpoint URL
 			const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
@@ -87,9 +89,9 @@ export default (router, { services, exceptions, env, logger }) => {
 				headers,
 			});
 
-			if (!response.ok) {
-				throw new Error("GitLab API error: Failed to fetch first level folder");
-			}
+			// if (!response.ok) {
+			// 	throw new Error("GitLab API error: Failed to fetch first level folder");
+			// }
 
 			const firstLevel = await response.json();
 
@@ -109,11 +111,12 @@ export default (router, { services, exceptions, env, logger }) => {
 						}
 					);
 
-					if (!response.ok) {
-						throw new Error("GitLab API error: Failed to fetch files metadata");
-					}
+					// if (!response.ok) {
+					// 	throw new Error("GitLab API error: Failed to fetch files metadata");
+					// }
 
 					const data = await response.json();
+
 					return { ...item, files: data };
 				})
 			);
@@ -130,10 +133,11 @@ export default (router, { services, exceptions, env, logger }) => {
 					}
 				);
 
-				if (!fileResponse.ok) {
-					throw new Error("GitLab API error: Failed to fetch file data");
-				}
+				// if (!fileResponse.ok) {
+				// 	throw new Error("GitLab API error: Failed to fetch file data");
+				// }
 
+				logger.info(fileResponse.json());
 				return fileResponse.json();
 			}
 
@@ -141,8 +145,16 @@ export default (router, { services, exceptions, env, logger }) => {
 			async function fetchFilesData(folder, headers) {
 				const files = await Promise.all(
 					folder.files.map(async (file) => {
-						const filePath = file.path.replace(/\//g, "%2F");
+						// If file path has a slash, replace it with %2F
+
+						const filePath = file.path
+							.replace(/\//g, "%2F")
+							.replace(/\./g, "%2E");
+						logger.info(file.path.body);
+						logger.info(filePath);
+
 						const fileData = await fetchFileData(filePath, headers);
+						logger.info(fileData);
 
 						return {
 							...file,
