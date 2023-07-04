@@ -129,7 +129,7 @@ export default (router, { services, exceptions, env, logger }) => {
 				const fileResponse = await fetch(
 					FILE_ENDPOINT_URL + filePath + `/?ref=${defaultBranch[0].name}`,
 					{
-						headers,
+						headers: headers,
 					}
 				);
 
@@ -145,8 +145,11 @@ export default (router, { services, exceptions, env, logger }) => {
 			async function fetchFilesData(folder, headers) {
 				const files = await Promise.all(
 					folder.files.map(async (file) => {
-						// If file is a folder, return it
-						if (file.type === "tree") {
+						// Check from file.path what mime type the file has
+						const mimeType = file.path.split(".").pop();
+						const checkMimeTypes = ["jpg", "jpeg", "png", "gif"];
+
+						if (file.type === "tree" || !checkMimeTypes.includes(mimeType)) {
 							return file;
 						}
 
@@ -171,7 +174,7 @@ export default (router, { services, exceptions, env, logger }) => {
 			// Fetch files data for each folder in foldersWithFilesMetadata
 			const foldersWithFilesData = await Promise.all(
 				foldersWithFilesMetadata.map(async (folder) => {
-					return fetchFilesData(folder, headers);
+					return fetchFilesData(folder, { ...headers, method: "HEAD" });
 				})
 			);
 
