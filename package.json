@@ -1,5 +1,5 @@
 {
-	"name": "kitegg-directus-gitlab-api-endpoint",
+	"name": "directus-extension-gitlab-api-endpoint",
 	"description": "An endpoint to talk to a GitLab instance through Directus",
 	"icon": "extension",
 	"version": "1.0.0",
@@ -10,9 +10,9 @@
 	],
 	"directus:extension": {
 		"type": "endpoint",
-		"path": "dist/index.js",
+		"path": "src/index.js",
 		"source": "src/index.js",
-		"host": "^10.0.0"
+		"host": "^10.1.5"
 	},
 	"scripts": {
 		"build": "directus-extension build",
@@ -20,7 +20,7 @@
 		"link": "directus-extension link"
 	},
 	"devDependencies": {
-		"@directus/extensions-sdk": "10.0.0"
+		"@directus/extensions-sdk": "10.1.5"
 	},
 	"dependencies": {
 		"mime-types": "^2.1.35"
