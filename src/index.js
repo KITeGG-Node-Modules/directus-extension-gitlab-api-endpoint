@@ -4,14 +4,13 @@ const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
 
 // ROUTES ---------------------------------------------------------------------
-export default (router, { services, exceptions, env, logger }) => {
-	const { ForbiddenException } = exceptions;
-
+export default (router, { services, env, logger }) => {
 	// Search GitLab for repos
 	router.get("/search", async (req, res, next) => {
 		// Check if user is logged in
 		if (!req.accountability.user) {
-			return next(new ForbiddenException());
+			res.status(401)
+			return res.send({ message: 'api_errors.unauthorized' })
 		}
 
 		try {
@@ -56,7 +55,8 @@ export default (router, { services, exceptions, env, logger }) => {
 	router.get("/get", async (req, res, next) => {
 		// Check if user is logged in
 		if (!req.accountability.user) {
-			return next(new ForbiddenException());
+			res.status(401)
+			return res.send({ message: 'api_errors.unauthorized' })
 		}
 
 		try {
@@ -224,7 +224,8 @@ export default (router, { services, exceptions, env, logger }) => {
 	router.get("/markdown", async (req, res, next) => {
 		// Check if user is logged in
 		if (!req.accountability.user) {
-			return next(new ForbiddenException());
+			res.status(401)
+			return res.send({ message: 'api_errors.unauthorized' })
 		}
 
 		try {
