@@ -15,11 +15,6 @@
 		"host": "^10.1.5"
 	},
 	"type": "module",
-	"scripts": {
-		"build": "directus-extension build",
-		"dev": "directus-extension build -w --no-minify",
-		"link": "directus-extension link"
-	},
 	"devDependencies": {
 		"@directus/extensions-sdk": "10.1.5"
 	},
