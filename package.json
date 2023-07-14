@@ -10,7 +10,7 @@
 	],
 	"directus:extension": {
 		"type": "endpoint",
-		"path": "dist/index.js",
+		"path": "src/index.js",
 		"source": "src/index.js",
 		"host": "^10.1.5"
 	},
