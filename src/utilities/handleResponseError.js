@@ -1,6 +1,6 @@
 function handleResponseError(response) {
 	res.status(response.status);
-	return res.send({ message: response.body });
+	return res.send({ body: response.json() });
 }
 
 export default handleResponseError;
