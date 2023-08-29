@@ -72,9 +72,13 @@ export default {
 				// Fetch branches
 				const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
 
-				// if (!branchesResponse.ok) {
-				// 	throw new Error("GitLab API error: Failed to fetch branches");
-				// }
+				if (!branchesResponse.ok) {
+					logger.info(`Status code: ${branchesResponse.status}`);
+					logger.info(`Response: ${branchesResponse.body}`);
+
+					console.log(branchesResponse);
+					throw new Error("GitLab API error: Failed to fetch branches");
+				}
 
 				const branches = await branchesResponse.json();
 
@@ -91,6 +95,10 @@ export default {
 
 				// Check if first level folder fetch is ok
 				if (!response.ok) {
+					logger.info(`Status code: ${response.status}`);
+					logger.info(`Response: ${response.body}`);
+
+					console.log(response);
 					throw new Error(
 						"GitLab API error: Failed to fetch first level folder"
 					);
@@ -116,6 +124,10 @@ export default {
 
 						// Check if files metadata fetch is ok
 						if (!response.ok) {
+							logger.info(`Status code: ${response.status}`);
+							logger.info(`Response: ${response.body}`);
+
+							console.log(response);
 							throw new Error(
 								"GitLab API error: Failed to fetch files metadata"
 							);
@@ -141,6 +153,10 @@ export default {
 
 					// Check if file data fetch is ok
 					if (!fileResponse.ok) {
+						logger.info(`Status code: ${fileResponse.status}`);
+						logger.info(`Response: ${fileResponse.body}`);
+
+						console.log(fileResponse);
 						throw new Error("GitLab API error: Failed to fetch file data");
 					}
 
