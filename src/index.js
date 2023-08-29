@@ -72,9 +72,9 @@ export default {
 				// Fetch branches
 				const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
 
-				if (!branchesResponse.ok) {
-					throw new Error("GitLab API error: Failed to fetch branches");
-				}
+				// if (!branchesResponse.ok) {
+				// 	throw new Error("GitLab API error: Failed to fetch branches");
+				// }
 
 				const branches = await branchesResponse.json();
 
