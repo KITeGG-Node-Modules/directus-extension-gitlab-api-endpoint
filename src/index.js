@@ -74,7 +74,7 @@ export default {
 
 				if (!branchesResponse.ok) {
 					res.status(branchesResponse.status);
-					res.send({ response: branchesResponse.body });
+					return res.send({ response: branchesResponse.body });
 				}
 
 				const branches = await branchesResponse.json();
@@ -93,7 +93,7 @@ export default {
 				// Check if first level folder fetch is ok
 				if (!response.ok) {
 					res.status(response.status);
-					res.send({ response: response.body });
+					return res.send({ response: response.body });
 				}
 
 				const firstLevel = await response.json();
@@ -117,7 +117,7 @@ export default {
 						// Check if files metadata fetch is ok
 						if (!response.ok) {
 							res.status(response.status);
-							res.send({ response: response.body });
+							return res.send({ response: response.body });
 						}
 
 						const data = await response.json();
@@ -141,7 +141,7 @@ export default {
 					// Check if file data fetch is ok
 					if (!fileResponse.ok) {
 						res.status(fileResponse.status);
-						res.send({ response: fileResponse.body });
+						return res.send({ response: fileResponse.body });
 					}
 
 					return fileResponse.json();
