@@ -1,4 +1,5 @@
 import { lookup } from "mime-types";
+import handleResponseError from "./utilities/handleResponseError";
 
 const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
@@ -24,7 +25,7 @@ export default {
 				const response = await fetch(SEARCH_ENDPOINT_URL, { headers });
 
 				if (!response.ok) {
-					throw new Error("GitLab API error: Failed to search for repos");
+					handleResponseError(response);
 				}
 
 				const data = await response.json();
@@ -73,8 +74,7 @@ export default {
 				const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
 
 				if (!branchesResponse.ok) {
-					res.status(branchesResponse.status);
-					res.send({ response: branchesResponse.body });
+					handleResponseError(branchesResponse);
 				}
 
 				const branches = await branchesResponse.json();
@@ -92,8 +92,7 @@ export default {
 
 				// Check if first level folder fetch is ok
 				if (!response.ok) {
-					res.status(response.status);
-					res.send({ response: response.body });
+					handleResponseError(response);
 				}
 
 				const firstLevel = await response.json();
@@ -116,8 +115,7 @@ export default {
 
 						// Check if files metadata fetch is ok
 						if (!response.ok) {
-							res.status(response.status);
-							res.send({ response: response.body });
+							handleResponseError(response);
 						}
 
 						const data = await response.json();
@@ -140,8 +138,7 @@ export default {
 
 					// Check if file data fetch is ok
 					if (!fileResponse.ok) {
-						res.status(fileResponse.status);
-						res.send({ response: fileResponse.body });
+						handleResponseError(fileResponse);
 					}
 
 					return fileResponse.json();
@@ -250,7 +247,7 @@ export default {
 
 				// Check if markdown content was fetched successfully
 				if (!markdownContent.ok) {
-					throw new Error("Failed to fetch markdown content");
+					handleResponseError(markdownContent);
 				}
 
 				const markdownText = await markdownContent.text();
