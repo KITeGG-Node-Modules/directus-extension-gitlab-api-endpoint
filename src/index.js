@@ -1,5 +1,5 @@
 import { lookup } from "mime-types";
-import handleResponseError from "./utilities/handleResponseError";
+import handleResponseError from "./utilities/handleResponseError.js";
 
 const BASE_URL = "https://gitlab.rlp.net";
 const GROUP = "21057"; // equals to KITeGG on RLP GitLab
