@@ -25,7 +25,7 @@ export default {
 				const response = await fetch(SEARCH_ENDPOINT_URL, { headers });
 
 				if (!response.ok) {
-					handleResponseError(response);
+					handleResponseError(res, response);
 				}
 
 				const data = await response.json();
@@ -74,7 +74,7 @@ export default {
 				const branchesResponse = await fetch(BRANCH_ENDPOINT_URL, { headers });
 
 				if (!branchesResponse.ok) {
-					handleResponseError(branchesResponse);
+					handleResponseError(res, branchesResponse);
 				}
 
 				const branches = await branchesResponse.json();
@@ -92,7 +92,7 @@ export default {
 
 				// Check if first level folder fetch is ok
 				if (!response.ok) {
-					handleResponseError(response);
+					handleResponseError(res, response);
 				}
 
 				const firstLevel = await response.json();
@@ -115,7 +115,7 @@ export default {
 
 						// Check if files metadata fetch is ok
 						if (!response.ok) {
-							handleResponseError(response);
+							handleResponseError(res, response);
 						}
 
 						const data = await response.json();
@@ -138,7 +138,7 @@ export default {
 
 					// Check if file data fetch is ok
 					if (!fileResponse.ok) {
-						handleResponseError(fileResponse);
+						handleResponseError(res, fileResponse);
 					}
 
 					return fileResponse.json();
@@ -247,7 +247,7 @@ export default {
 
 				// Check if markdown content was fetched successfully
 				if (!markdownContent.ok) {
-					handleResponseError(markdownContent);
+					handleResponseError(res, markdownContent);
 				}
 
 				const markdownText = await markdownContent.text();
