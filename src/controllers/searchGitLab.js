@@ -1,4 +1,4 @@
-import { BASE_URL, GROUP } from "../variables.js";
+import { BASE_URL, GROUP } from "../constants.js";
 import { checkAccess, handleResponseError } from "../utilities/index.js";
 
 async function searchGitLab(payload) {

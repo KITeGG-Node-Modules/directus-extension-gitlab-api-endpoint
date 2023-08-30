@@ -1,5 +1,5 @@
 import { lookup } from "mime-types";
-import { BASE_URL } from "../variables.js";
+import { BASE_URL } from "../constants.js";
 import { checkAccess, handleResponseError } from "../utilities/index.js";
 
 async function getRepository(payload) {

@@ -1,4 +1,4 @@
-import { BASE_URL } from "../variables.js";
+import { BASE_URL } from "../constants.js";
 import { checkAccess, handleResponseError } from "../utilities/index.js";
 
 async function getMarkdownContent(payload) {
