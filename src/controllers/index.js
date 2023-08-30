@@ -1,4 +1,5 @@
-import { create } from "./create";
-import { search } from "./search";
+import { create } from "./create.js";
+import { get } from "./get.js";
+import { search } from "./search.js";
 
-export { create, search };
+export { create, get, search };
