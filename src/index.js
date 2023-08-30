@@ -1,41 +1,20 @@
+import { search } from "./controllers";
 import { lookup } from "mime-types";
 
 import { BASE_URL, GROUP } from "./variables.js";
-import handleResponseError from "./utilities/handleResponseError.js";
+import { handleResponseError } from "./utilities/handleResponseError.js";
 import { getDefaultBranch } from "./utilities/getDefaultBranch.js";
 
 // ROUTES ---------------------------------------------------------------------
 export default {
 	id: "gitlab-api",
-	handler: (router, { services, env, logger }) => {
+	handler: (router, context) => {
+		const { env, services, logger } = context;
+
 		// Search GitLab for repos
-		router.get("/search", async (req, res, next) => {
-			// Check if user is logged in
-			if (!req.accountability.user) {
-				res.status(401);
-				return res.send({ message: "api_errors.unauthorized" });
-			}
-
-			try {
-				// Construct the search endpoint URL
-				const SEARCH_ENDPOINT_URL = `${BASE_URL}/api/v4/groups/${GROUP}/search?scope=projects&search=${req.query.query}`;
-				const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
-
-				// Fetch repos
-				const response = await fetch(SEARCH_ENDPOINT_URL, { headers });
-
-				if (!response.ok) {
-					handleResponseError(res, response);
-				}
-
-				const data = await response.json();
-
-				return res.json(data);
-			} catch (error) {
-				logger.error(error);
-				return next(error);
-			}
-		});
+		router.get("/search", (req, res, next) =>
+			search({ req, res, next, context })
+		);
 
 		// Post GitLab repo
 		router.post("/create", async (req, res, next) => {
