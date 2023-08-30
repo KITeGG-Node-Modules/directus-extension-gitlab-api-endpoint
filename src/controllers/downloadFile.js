@@ -10,7 +10,7 @@ async function downloadFile(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
-	const FILE_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository`;
+	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository`;
 	const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
 	const filePath = encodeURIComponent(req.query.path);
 	const branch = await getDefaultBranch(req.query.id, env, res);
@@ -21,26 +21,28 @@ async function downloadFile(payload) {
 
 	try {
 		if (type === "folder") {
-			const fileResponse = await fetch(
-				`${FILE_ENDPOINT_URL}/archive.zip?path=${filePath}`,
-				{ headers, mode: "same-origin", method: "get" }
-			);
+			const ARCHIVE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`;
 
-			if (!fileResponse.ok) {
-				handleResponseError(res, fileResponse);
+			const archiveResponse = await fetch(ARCHIVE_ENDPOINT_URL, {
+				headers,
+				mode: "same-origin",
+				method: "get",
+			});
+
+			if (!archiveResponse.ok) {
+				handleResponseError(res, archiveResponse);
 			}
 
-			const blob = await fileResponse.blob();
+			const blob = await archiveResponse.blob();
 
 			res.type(blob.type);
 			return blob.arrayBuffer().then((buf) => {
 				res.send(Buffer.from(buf));
 			});
 		} else if (type === "file") {
-			const fileResponse = await fetch(
-				`${FILE_ENDPOINT_URL}/files/${filePath}?ref=${branch[0].name}`,
-				{ headers }
-			);
+			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}?ref=${branch[0].name}`;
+
+			const fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
 
 			if (!fileResponse.ok) {
 				handleResponseError(res, fileResponse);

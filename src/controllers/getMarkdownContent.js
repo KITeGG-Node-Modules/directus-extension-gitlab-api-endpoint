@@ -15,10 +15,12 @@ async function getMarkdownContent(payload) {
 
 		const filePath = encodeURIComponent(req.query.path);
 
+		const MARKDOWN_ENDPOINT_URL = `${FILE_ENDPOINT_URL}${filePath}/raw`;
+
 		let markdownContent;
 
 		// Fetch markdown content
-		markdownContent = await fetch(FILE_ENDPOINT_URL + filePath + `/raw`, {
+		markdownContent = await fetch(MARKDOWN_ENDPOINT_URL, {
 			headers,
 		});
 
