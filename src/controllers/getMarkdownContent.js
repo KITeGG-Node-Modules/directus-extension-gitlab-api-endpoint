@@ -13,7 +13,7 @@ async function getMarkdownContent(payload) {
 		const FILE_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository/files/`;
 		const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
 
-		const filePath = req.query.path.replace(/\//g, "%2F");
+		const filePath = encodeURIComponent(req.query.path);
 
 		let markdownContent;
 

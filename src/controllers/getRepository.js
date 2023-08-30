@@ -104,7 +104,7 @@ async function getRepository(payload) {
 					}
 
 					// If file path has a slash, replace it with %2F
-					const filePath = file.path.replace(/\//g, "%2F");
+					const filePath = encodeURIComponent(file.path);
 
 					const fileData = await fetchFileData(filePath, headers);
 
