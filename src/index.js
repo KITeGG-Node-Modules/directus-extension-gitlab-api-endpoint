@@ -1,4 +1,4 @@
-import { search } from "./controllers";
+import { create, search } from "./controllers";
 import { lookup } from "mime-types";
 
 import { BASE_URL, GROUP } from "./variables.js";
@@ -9,7 +9,7 @@ import { getDefaultBranch } from "./utilities/getDefaultBranch.js";
 export default {
 	id: "gitlab-api",
 	handler: (router, context) => {
-		const { env, services, logger } = context;
+		const { env, logger } = context;
 
 		// Search GitLab for repos
 		router.get("/search", (req, res, next) =>
@@ -17,21 +17,9 @@ export default {
 		);
 
 		// Post GitLab repo
-		router.post("/create", async (req, res, next) => {
-			const { ItemsService } = services;
-
-			const gitImportService = new ItemsService("git_imports", {
-				schema: req.schema,
-				accountability: req.accountability,
-			});
-
-			gitImportService
-				.createOne(req.body)
-				.then(() => res.json("Git Repo successfully added"))
-				.catch((error) => {
-					return next(error);
-				});
-		});
+		router.post("/create", async (req, res, next) =>
+			create({ req, res, next, context })
+		);
 
 		// Get GitLab repo
 		router.get("/get", async (req, res, next) => {
