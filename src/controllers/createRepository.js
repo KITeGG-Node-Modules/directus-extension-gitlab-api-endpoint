@@ -1,4 +1,4 @@
-async function create(payload) {
+async function createRepository(payload) {
 	const { req, res, next, context } = payload;
 	const { ItemsService } = context.services;
 
@@ -15,4 +15,4 @@ async function create(payload) {
 		});
 }
 
-export { create };
+export { createRepository };

@@ -1,34 +1,38 @@
-import { create, download, get, markdown, search } from "./controllers";
+import {
+	createRepository,
+	downloadFile,
+	getMarkdownContent,
+	getRepository,
+	searchGitLab,
+} from "./controllers";
 
 // ROUTES ---------------------------------------------------------------------
 export default {
 	id: "gitlab-api",
 	handler: (router, context) => {
-		const { env, logger } = context;
-
-		// Search GitLab for repos
+		// Search GitLab for repositories
 		router.get("/search", (req, res, next) =>
-			search({ req, res, next, context })
+			searchGitLab({ req, res, next, context })
 		);
 
-		// Post GitLab repo
+		// Post GitLab repo to Direcuts
 		router.post("/create", (req, res, next) =>
-			create({ req, res, next, context })
+			createRepository({ req, res, next, context })
 		);
 
-		// Get GitLab repo
+		// Get repository from GitLab
 		router.get("/get", (req, res, next) => {
-			get({ req, res, next, context });
+			getRepository({ req, res, next, context });
 		});
 
-		// Download file
+		// Download file from repository
 		router.get("/download", async (req, res, next) => {
-			download({ req, res, next, context });
+			downloadFile({ req, res, next, context });
 		});
 
-		// Get content of Markdown file
+		// Get content of markdown file from repository
 		router.get("/markdown", async (req, res, next) => {
-			markdown({ req, res, next, context });
+			getMarkdownContent({ req, res, next, context });
 		});
 	},
 };

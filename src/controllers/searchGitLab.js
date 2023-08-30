@@ -1,7 +1,7 @@
 import { BASE_URL, GROUP } from "../variables.js";
-import { checkAccess, handleResponseError } from "../utilities";
+import { checkAccess, handleResponseError } from "../utilities/index.js";
 
-async function search(payload) {
+async function searchGitLab(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
@@ -29,4 +29,4 @@ async function search(payload) {
 	}
 }
 
-export { search };
+export { searchGitLab };

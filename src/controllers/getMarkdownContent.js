@@ -1,7 +1,7 @@
 import { BASE_URL } from "../variables.js";
-import { checkAccess, handleResponseError } from "../utilities";
+import { checkAccess, handleResponseError } from "../utilities/index.js";
 
-async function markdown(payload) {
+async function getMarkdownContent(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
@@ -36,4 +36,4 @@ async function markdown(payload) {
 	}
 }
 
-export { markdown };
+export { getMarkdownContent };

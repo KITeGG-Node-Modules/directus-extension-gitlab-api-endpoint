@@ -1,8 +1,8 @@
 import { lookup } from "mime-types";
 import { BASE_URL } from "../variables.js";
-import { checkAccess, handleResponseError } from "../utilities";
+import { checkAccess, handleResponseError } from "../utilities/index.js";
 
-async function get(payload) {
+async function getRepository(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
@@ -170,4 +170,4 @@ async function get(payload) {
 	}
 }
 
-export { get };
+export { getRepository };

@@ -1,7 +1,13 @@
-import { create } from "./create.js";
-import { download } from "./download.js";
-import { get } from "./get.js";
-import { markdown } from "./markdown.js";
-import { search } from "./search.js";
+import { createRepository } from "./createRepository.js";
+import { downloadFile } from "./downloadFile.js";
+import { getMarkdownContent } from "./getMarkdownContent.js";
+import { getRepository } from "./getRepository.js";
+import { searchGitLab } from "./searchGitLab.js";
 
-export { create, download, get, markdown, search };
+export {
+	createRepository,
+	downloadFile,
+	getMarkdownContent,
+	getRepository,
+	searchGitLab,
+};

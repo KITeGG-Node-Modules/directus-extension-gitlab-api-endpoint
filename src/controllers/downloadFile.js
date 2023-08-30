@@ -4,9 +4,9 @@ import {
 	checkAccess,
 	getDefaultBranch,
 	handleResponseError,
-} from "../utilities";
+} from "../utilities/index.js";
 
-async function download(payload) {
+async function downloadFile(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
@@ -66,4 +66,4 @@ async function download(payload) {
 	}
 }
 
-export { download };
+export { downloadFile };
