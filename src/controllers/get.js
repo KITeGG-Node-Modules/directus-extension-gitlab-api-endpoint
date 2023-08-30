@@ -6,7 +6,7 @@ async function get(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
-	// Check if user is logged in
+	// Check if user is authorized
 	checkAccess({ req, res, logger });
 
 	try {
