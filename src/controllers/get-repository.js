@@ -11,7 +11,7 @@ async function getRepository(payload) {
 
 	try {
 		// Construct the repo endpoint URL
-		const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository`;
+		const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.params.repo}/repository`;
 		const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
 
 		// Construct the branches endpoint URL

@@ -21,8 +21,14 @@ export default {
 		);
 
 		// Get repository from GitLab
-		router.get("/get", (req, res, next) => {
-			getRepository({ req, res, next, context });
+		router.get("/get/:repo", (req, res, next) => {
+			if (req.query.download) {
+				// Download file from repository
+				downloadFile({ req, res, next, context });
+			} else {
+				// Get repository from GitLab
+				getRepository({ req, res, next, context });
+			}
 		});
 
 		// Download file from repository
