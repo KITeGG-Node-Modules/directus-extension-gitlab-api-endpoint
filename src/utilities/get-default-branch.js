@@ -1,5 +1,5 @@
-import { BASE_URL } from "../variables.js";
-import handleResponseError from "./handleResponseError.js";
+import { BASE_URL } from "../constants.js";
+import { handleResponseError } from "./handle-response-error.js";
 
 async function getDefaultBranch(id, env, res) {
 	// Construct the repo endpoint URL

@@ -8,4 +8,4 @@ function handleResponseError(res, response) {
 	});
 }
 
-export default handleResponseError;
+export { handleResponseError };
