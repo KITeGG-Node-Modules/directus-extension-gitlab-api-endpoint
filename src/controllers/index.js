@@ -1,8 +1,8 @@
-import { createRepository } from "./createRepository.js";
-import { downloadFile } from "./downloadFile.js";
-import { getMarkdownContent } from "./getMarkdownContent.js";
-import { getRepository } from "./getRepository.js";
-import { searchGitLab } from "./searchGitLab.js";
+import { createRepository } from "./create-repository.js";
+import { downloadFile } from "./download-file.js";
+import { getMarkdownContent } from "./get-markdown-content.js";
+import { getRepository } from "./get-repository.js";
+import { searchGitLab } from "./search-gitLab.js";
 
 export {
 	createRepository,
