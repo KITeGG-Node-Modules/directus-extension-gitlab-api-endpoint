@@ -3,7 +3,7 @@ import {
 	downloadFile,
 	getRepository,
 	searchGitLab,
-} from "./controllers";
+} from "./controllers/index.js";
 
 // ROUTES ---------------------------------------------------------------------
 export default {
