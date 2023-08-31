@@ -1,20 +1,15 @@
 import { lookup } from "mime-types";
 import { BASE_URL } from "../constants.js";
-import {
-	checkAccess,
-	getDefaultBranch,
-	handleResponseError,
-} from "../utilities/index.js";
+import { checkAccess, handleResponseError } from "../utilities/index.js";
 
 async function downloadFile(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
-	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.query.id}/repository`;
+	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.params.repo}/repository`;
 	const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
-	const filePath = encodeURIComponent(req.query.path);
-	const branch = await getDefaultBranch(req.query.id, env, res);
-	const type = req.query.path.includes(".") ? "file" : "folder";
+	const filePath = encodeURIComponent(req.query.download);
+	const type = req.query.download.includes(".") ? "file" : "folder";
 
 	// Check if user is authorized
 	checkAccess({ req, res, logger });
@@ -40,7 +35,7 @@ async function downloadFile(payload) {
 				res.send(Buffer.from(buf));
 			});
 		} else if (type === "file") {
-			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}?ref=${branch[0].name}`;
+			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw`;
 
 			const fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
 
@@ -48,19 +43,16 @@ async function downloadFile(payload) {
 				handleResponseError(res, fileResponse);
 			}
 
-			const fileInfo = await fileResponse.json();
-			const mimeType = lookup(fileInfo.file_name);
+			const title = fileResponse.headers.get("x-gitlab-file-name");
+			const mimeType = lookup(title);
 
-			const content = fileInfo.content;
-			const buffer = Buffer.from(content, "base64");
+			const fileContent = await fileResponse.blob();
 
-			res.setHeader("Content-Type", mimeType);
-			res.setHeader(
-				"Content-Disposition",
-				`attachment; filename=${fileInfo.file_name}`
-			);
-
-			return res.send(buffer);
+			res.type(mimeType || fileContent.type || "application/octet-stream");
+			res.setHeader("Content-Disposition", `attachment; filename=${title}`);
+			return fileContent.arrayBuffer().then((buf) => {
+				res.send(Buffer.from(buf));
+			});
 		}
 	} catch (error) {
 		logger.error(error);
