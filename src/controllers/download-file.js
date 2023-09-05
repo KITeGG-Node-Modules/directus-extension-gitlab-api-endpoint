@@ -31,8 +31,10 @@ async function downloadFile(payload) {
 			const blob = await archiveResponse.blob();
 
 			res.type(blob.type);
+			res.setHeader("Content-Encoding", "base64");
 			return blob.arrayBuffer().then((buf) => {
-				res.send(Buffer.from(buf));
+				const base64 = Buffer.from(buf).toString("base64");
+				res.send(base64);
 			});
 		} else if (type === "file") {
 			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw`;
@@ -49,9 +51,11 @@ async function downloadFile(payload) {
 			const fileContent = await fileResponse.blob();
 
 			res.type(mimeType || fileContent.type || "application/octet-stream");
+			res.setHeader("Content-Encoding", "base64");
 			res.setHeader("Content-Disposition", `attachment; filename=${title}`);
 			return fileContent.arrayBuffer().then((buf) => {
-				res.send(Buffer.from(buf));
+				const base64 = Buffer.from(buf).toString("base64");
+				res.send(base64);
 			});
 		}
 	} catch (error) {
