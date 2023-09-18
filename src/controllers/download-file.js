@@ -6,7 +6,9 @@ async function downloadFile(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
-	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${req.params.repo}/repository`;
+	const repoURI = encodeURIComponent(req.params.repo);
+
+	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${repoURI}/repository`;
 	const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
 	const filePath = encodeURIComponent(req.query.download);
 	const type = req.query.download.includes(".") ? "file" : "folder";
@@ -38,6 +40,8 @@ async function downloadFile(payload) {
 			});
 		} else if (type === "file") {
 			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw`;
+
+			console.log(FILE_ENDPOINT_URL);
 
 			const fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
 
