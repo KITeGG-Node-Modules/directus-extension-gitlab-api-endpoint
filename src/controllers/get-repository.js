@@ -128,19 +128,6 @@ async function getRepository(payload) {
 			})
 		);
 
-		// Split into files and repositories (notebooks)
-		foldersWithFilesData.map((folder) => {
-			const files = folder.files.filter(
-				(item) => !item.name.includes(".ipynb")
-			);
-			const repositories = folder.files.filter((item) =>
-				item.name.includes(".ipynb")
-			);
-
-			folder.files = files;
-			folder.repositories = repositories;
-		});
-
 		// Compute mimeType of files from file name
 		files.map((file) => {
 			const fileName = file.name;
