@@ -30,14 +30,8 @@ async function downloadFile(payload) {
 				handleResponseError(res, archiveResponse);
 			}
 
-			const blob = await archiveResponse.blob();
-
-			res.type(blob.type);
-			res.setHeader("Content-Encoding", "base64");
-			return blob.arrayBuffer().then((buf) => {
-				const base64 = Buffer.from(buf).toString("base64");
-				res.send(base64);
-			});
+			res.setHeader('Content-Type', archiveResponse.headers['content-type']);
+			archiveResponse.body.pipe(res);
 		} else if (type === "file") {
 			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw`;
 
@@ -52,15 +46,10 @@ async function downloadFile(payload) {
 			const title = fileResponse.headers.get("x-gitlab-file-name");
 			const mimeType = lookup(title);
 
-			const fileContent = await fileResponse.blob();
-
 			res.type(mimeType || fileContent.type || "application/octet-stream");
-			res.setHeader("Content-Encoding", "base64");
 			res.setHeader("Content-Disposition", `attachment; filename=${title}`);
-			return fileContent.arrayBuffer().then((buf) => {
-				const base64 = Buffer.from(buf).toString("base64");
-				res.send(base64);
-			});
+			res.setHeader('Content-Type', archiveResponse.headers['content-type']);
+			fileResponse.body.pipe(res);
 		}
 	} catch (error) {
 		logger.error(error);
