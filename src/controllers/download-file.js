@@ -48,7 +48,7 @@ async function downloadFile(payload) {
 
 	res.setHeader('Content-Type', fileResponse.headers['content-type']);
 	res.setHeader('Content-Disposition', fileResponse.headers['content-disposition']);
-	if (fileResponse.headers['x-gitlab-size']) res.setHeader('Content-Length', fileResponse.headers['x-gitlab-size']);
+	if (fileResponse.headers['content-encoding']) res.setHeader('Content-Encoding', fileResponse.headers['content-encoding']);
 
 	fileResponse.body.pipe(res);
 }
