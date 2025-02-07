@@ -30,10 +30,10 @@ async function getRepository(payload) {
 		const defaultBranch = branches.filter((branch) => branch.default);
 
 		// Construct the folder endpoint URL
-		const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree?per_page=-1`;
+		const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
 
 		// Fetch first level folder
-		const response = await fetch(FIRST_LEVEL_FOLDER_ENDPOINT_URL, {
+		const response = await fetch(`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?per_page=-1`, {
 			headers,
 		});
 
