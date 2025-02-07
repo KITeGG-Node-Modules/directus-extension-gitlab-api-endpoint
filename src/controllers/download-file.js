@@ -31,11 +31,9 @@ async function downloadFile(payload) {
 	let fileResponse
 	try {
 		if (type === 'folder') {
-			const ARCHIVE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`;
-			fileResponse = await fetch(ARCHIVE_ENDPOINT_URL, { headers });
+			fileResponse = await fetch(`${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`, { headers });
 		} else {
-			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw?lfs=true`;
-			fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
+			fileResponse = await fetch(`${REPO_ENDPOINT_URL}/files/${filePath}/raw?lfs=true`, { headers });
 		}
 	} catch (error) {
 		logger.error(error);
