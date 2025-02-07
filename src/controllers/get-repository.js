@@ -54,7 +54,7 @@ async function getRepository(payload) {
 		const foldersWithFilesMetadata = await Promise.all(
 			folders.map(async (item) => {
 				const response = await fetch(
-					`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
+					`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}&per_page=-1`,
 					{
 						headers,
 					}
