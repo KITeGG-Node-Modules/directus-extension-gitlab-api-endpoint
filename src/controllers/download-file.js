@@ -1,4 +1,3 @@
-import { lookup } from "mime-types";
 import { BASE_URL } from "../constants.js";
 import { checkAccess, handleResponseError } from "../utilities/index.js";
 
@@ -6,55 +5,52 @@ async function downloadFile(payload) {
 	const { req, res, next, context } = payload;
 	const { env, logger } = context;
 
-	const repoURI = encodeURIComponent(req.params.repo);
+	if (!env.GITLAB_ACCESS_TOKEN) {
+		res.status(503);
+		return res.send({ status: 503, message: 'Service Unavailable' });
+	}
+	if (!req.params.repo || !req.query.download) {
+		res.status(400);
+		return res.send({ status: 400, message: 'Bad Request' })
+	}
 
+	const repoURI = encodeURIComponent(req.params.repo);
 	const REPO_ENDPOINT_URL = `${BASE_URL}/api/v4/projects/${repoURI}/repository`;
-	const headers = { "Private-Token": env.GITLAB_ACCESS_TOKEN };
+	const headers = { 'Private-Token': env.GITLAB_ACCESS_TOKEN };
 	const filePath = encodeURIComponent(req.query.download);
-	const type = req.query.download.includes(".") ? "file" : "folder";
 
 	// Check if user is authorized
 	checkAccess({ req, res, logger });
 
+	let type = 'file'
 	try {
-		if (type === "folder") {
+		await fetch(`${REPO_ENDPOINT_URL}/tree?path=${filePath}`, { headers })
+		type = 'folder'
+	} catch { /* ignored */ }
+
+	let fileResponse
+	try {
+		if (type === 'folder') {
 			const ARCHIVE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`;
-
-			const archiveResponse = await fetch(ARCHIVE_ENDPOINT_URL, {
-				headers,
-				mode: "same-origin",
-				method: "get",
-			});
-
-			if (!archiveResponse.ok) {
-				handleResponseError(res, archiveResponse);
-			}
-
-			res.setHeader('Content-Type', archiveResponse.headers['content-type']);
-			archiveResponse.body.pipe(res);
-		} else if (type === "file") {
-			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw`;
-
-			console.log(FILE_ENDPOINT_URL);
-
-			const fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
-
-			if (!fileResponse.ok) {
-				handleResponseError(res, fileResponse);
-			}
-
-			const title = fileResponse.headers.get("x-gitlab-file-name");
-			const mimeType = lookup(title);
-
-			res.type(mimeType || fileContent.type || "application/octet-stream");
-			res.setHeader("Content-Disposition", `attachment; filename=${title}`);
-			res.setHeader('Content-Type', archiveResponse.headers['content-type']);
-			fileResponse.body.pipe(res);
+			fileResponse = await fetch(ARCHIVE_ENDPOINT_URL, { headers });
+		} else {
+			const FILE_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/files/${filePath}/raw?lfs=true`;
+			fileResponse = await fetch(FILE_ENDPOINT_URL, { headers });
 		}
 	} catch (error) {
 		logger.error(error);
 		return next(error);
 	}
+
+	if (!fileResponse.ok) {
+		return handleResponseError(res, fileResponse);
+	}
+
+	res.setHeader('Content-Type', fileResponse.headers['content-type']);
+	res.setHeader('Content-Disposition', fileResponse.headers['content-disposition']);
+	if (fileResponse.headers['x-gitlab-size']) res.setHeader('Content-Length', fileResponse.headers['x-gitlab-size']);
+
+	fileResponse.body.pipe(res);
 }
 
 export { downloadFile };
