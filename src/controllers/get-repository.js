@@ -33,7 +33,7 @@ async function getRepository(payload) {
 		const FIRST_LEVEL_FOLDER_ENDPOINT_URL = `${REPO_ENDPOINT_URL}/tree`;
 
 		// Fetch first level folder
-		const response = await fetch(FIRST_LEVEL_FOLDER_ENDPOINT_URL, {
+		const response = await fetch(`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?per_page=-1`, {
 			headers,
 		});
 
@@ -43,30 +43,6 @@ async function getRepository(payload) {
 		}
 
 		const firstLevel = await response.json();
-
-		// The GitLab API paginates the response if the number of items is greater than 20
-		// Therefore this checks if the response has more than 20 items by checking the total pages and fetches the rest
-		if (response.headers.get("x-total-pages") > 1) {
-			const pages = response.headers.get("x-total-pages");
-
-			for (let i = 2; i <= pages; i++) {
-				const pageResponse = await fetch(
-					`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?page=${i}`,
-					{
-						headers,
-					}
-				);
-
-				// Check if page fetch is ok
-				if (!pageResponse.ok) {
-					handleResponseError(res, pageResponse);
-				}
-
-				const pageData = await pageResponse.json();
-
-				firstLevel.push(...pageData);
-			}
-		}
 
 		// Filter out folders
 		const folders = firstLevel.filter((item) => item.type === "tree");
@@ -78,7 +54,7 @@ async function getRepository(payload) {
 		const foldersWithFilesMetadata = await Promise.all(
 			folders.map(async (item) => {
 				const response = await fetch(
-					`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}`,
+					`${FIRST_LEVEL_FOLDER_ENDPOINT_URL}?path=${item.path}&per_page=-1`,
 					{
 						headers,
 					}
