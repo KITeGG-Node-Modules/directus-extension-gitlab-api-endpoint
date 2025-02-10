@@ -16,7 +16,7 @@
 	},
 	"type": "module",
 	"files": [
-		"dist"
+		"src"
 	],
 	"scripts": {
 		"link": "directus-extension link"
