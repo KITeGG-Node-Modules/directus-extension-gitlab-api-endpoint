@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import { BASE_URL } from "../constants.js";
 import { checkAccess, handleResponseError } from "../utilities/index.js";
 
@@ -24,14 +25,14 @@ async function downloadFile(payload) {
 
 	let type = 'file'
 	try {
-		await fetch(`${REPO_ENDPOINT_URL}/tree?path=${filePath}`, { headers })
-		type = 'folder'
+		const treeResponse = await fetch(`${REPO_ENDPOINT_URL}/tree?path=${filePath}`, { headers })
+		if (treeResponse.ok) type = 'folder'
 	} catch { /* ignored */ }
 
 	let fileResponse
 	try {
 		if (type === 'folder') {
-			fileResponse = await fetch(`${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`, { headers });
+			fileResponse = await fetch(`${REPO_ENDPOINT_URL}/archive.zip?path=${filePath}`, { headers, mode: 'same-origin' });
 		} else {
 			fileResponse = await fetch(`${REPO_ENDPOINT_URL}/files/${filePath}/raw?lfs=true`, { headers });
 		}
@@ -44,11 +45,10 @@ async function downloadFile(payload) {
 		return handleResponseError(res, fileResponse);
 	}
 
-	res.setHeader('Content-Type', fileResponse.headers['content-type']);
-	res.setHeader('Content-Disposition', fileResponse.headers['content-disposition']);
-	if (fileResponse.headers['content-encoding']) res.setHeader('Content-Encoding', fileResponse.headers['content-encoding']);
+	res.setHeader('Content-Type', fileResponse.headers.get('content-type'));
+	res.setHeader('Content-Disposition', fileResponse.headers.get('content-disposition'));
 
-	fileResponse.body.pipe(res);
+	Readable.fromWeb(fileResponse.body).pipe(res);
 }
 
 export { downloadFile };
