@@ -2,6 +2,7 @@ import {
 	createRepository,
 	downloadFile,
 	getRepository,
+	getTree,
 	searchGitLab,
 } from "./controllers/index.js";
 
@@ -17,6 +18,11 @@ export default {
 		// Post GitLab repo to Direcuts
 		router.post("/create", (req, res, next) =>
 			createRepository({ req, res, next, context })
+		);
+
+		// List all files of a repository, recursively
+		router.get("/tree/:repo*", (req, res, next) =>
+			getTree({ req, res, next, context })
 		);
 
 		// Get repository from GitLab
